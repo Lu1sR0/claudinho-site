@@ -18,7 +18,7 @@ const DADOS = {
       applicationCategory: "DeveloperApplication",
       applicationSubCategory: "Interface de desktop para o Claude Code",
       operatingSystem: "Windows 10, Windows 11",
-      softwareVersion: "1.0.0",
+      softwareVersion: "1.0.1",
       softwareRequirements: "Claude Code instalado",
       inLanguage: "pt-BR",
       isAccessibleForFree: true,

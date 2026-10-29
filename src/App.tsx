@@ -140,7 +140,7 @@ function Hero() {
         gsap.from(".hero h1 .palavra > span", { yPercent: 115, rotate: 5, duration: 1.2, ease: "expo.out", stagger: 0.06, delay: 0.2 });
         gsap.from(".hero .sub, .hero .acoes, .hero .temas-rapidos", { y: 24, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08, delay: 0.55 });
         gsap.from(".hero .janela", { y: 120, opacity: 0, duration: 1.6, ease: "expo.out", delay: 0.45 });
-      }
+      } else gsap.from(".hero .janela", { y: 50, opacity: 0, duration: 0.9, ease: "expo.out" });
       gsap.fromTo(".hero .janela", { rotateX: 14 }, { rotateX: 0, y: -40, ease: "none", scrollTrigger: { trigger: ".hero .janela", start: "top 95%", end: "bottom 30%", scrub: true } });
     });
     return () => ctx.revert();

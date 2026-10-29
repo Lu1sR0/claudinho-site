@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { reducedMotion } from "../lib/motion";
 import { evento } from "../lib/metricas";
 import { carregaMotor } from "../lib/vivo";
+import { fonteMono } from "../lib/fonte";
 
 // O Clawd de capacete que constroi a pagina: no topo, monta o hero peca por
 // peca; depois, conforme voce rola, monta os titulos e os cartoes de cada
@@ -122,7 +123,7 @@ export function Obra() {
           desenhaClawd(ctx, { x: Math.round(ob.x), y: Math.round(ob.y), pw: PW, ph: PH, cor: LARANJA, olhar: ob.olhar, pernas: pa ? [px, 0, px, 0] : [0, px, 0, px], bracos: true, braco: ob.feixe ? [0, 1] : [0, 0] });
           desenhaCapacete(ob.x, ob.y, 0);
           if (ob.bolha) {
-            ctx.font = `600 ${px <= 3 ? 10 : 11}px "Geist Mono Variable", monospace`;
+            ctx.font = `600 ${px <= 3 ? 10 : 11}px ${fonteMono()}`;
             const w = ctx.measureText(ob.bolha).width + 16, bx = Math.max(6, Math.min(W - w - 6, ob.x + CW / 2 - w / 2)), by = ob.y - PH - 26;
             ctx.fillStyle = "#ecebe7"; ctx.beginPath(); ctx.roundRect(bx, by, w, 20, 4); ctx.fill();
             ctx.fillStyle = "#121110"; ctx.fillText(ob.bolha, bx + w / 2, by + 10.5);
@@ -161,14 +162,14 @@ export function Obra() {
       };
       if (intro) {
         const b = pular.current!; b.hidden = false;
-        const TOPO = ".hero h1 .palavra, .hero .sub, .hero .acoes, .hero .temas-rapidos, .hero .janela";
+        const TOPO = ".hero h1 .palavra, .hero .sub, .hero .acoes, .hero .temas-rapidos";
         // pular mostra o topo na hora, sem esperar os passos da obra
         const pula = () => { pulou = true; document.querySelectorAll<HTMLElement>(TOPO).forEach((e) => mostra(e, 1)); ob.feixe = null; };
         b.onclick = pula;
         const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") pula(); };
         addEventListener("keydown", tecla);
         limpa = () => removeEventListener("keydown", tecla);
-        const pecas: [string, number][] = [[".hero h1", 900], [".hero .sub", 1700], [".hero .acoes", 1100], [".hero .temas-rapidos", 1500], [".hero .janela", 2600]];
+        const pecas: [string, number][] = [[".hero h1", 900], [".hero .sub", 1700], [".hero .acoes", 1100], [".hero .temas-rapidos", 1500]];
         enfileira(async () => {
           await espera(350);
           let feito = 0;

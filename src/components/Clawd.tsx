@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 
 import { evento } from "../lib/metricas";
 import { carregaMotor } from "../lib/vivo";
+import { fonteMono } from "../lib/fonte";
 
 export type Pose = "olha" | "digita" | "treina" | "dorme";
 type Props = { pose?: Pose; px?: number; className?: string; fala?: string[]; onde?: string };
@@ -74,7 +75,7 @@ export function Clawd({ pose = "olha", px = 6, className, fala, onde = "topo" }:
           if (digita) for (let k = 0; k < 3; k++) { const f = (t * 1.4 + k / 3) % 1; ctx.globalAlpha = Math.sin(f * Math.PI); ctx.fillStyle = LARANJA; ctx.fillRect(M + 10 * PW + k * px * 1.4, baseY - px - f * px * 3, px * 0.6, px * 0.6); ctx.globalAlpha = 1; }
         }
         for (let k = gotas.length - 1; k >= 0; k--) { const g = gotas[k], s = (ms - g.t) / 1000; if (s > 0.9) { gotas.splice(k, 1); continue; } ctx.globalAlpha = 1 - s / 0.9; ctx.fillStyle = "#8fc9e8"; ctx.fillRect(g.x + g.vx * s, g.y + g.vy * s + 140 * s * s, Math.max(2, px * 0.45), Math.max(3, px * 0.8)); }
-        for (let k = zs.length - 1; k >= 0; k--) { const z = zs[k], s = (ms - z.t) / 1000; if (s > 2) { zs.splice(k, 1); continue; } ctx.globalAlpha = Math.sin((s / 2) * Math.PI); ctx.fillStyle = "#ecebe7"; ctx.font = `600 ${px * 2}px "Geist Mono Variable", monospace`; ctx.fillText("z", z.x + Math.sin(s * 3) * px, z.y - s * px * 4); }
+        for (let k = zs.length - 1; k >= 0; k--) { const z = zs[k], s = (ms - z.t) / 1000; if (s > 2) { zs.splice(k, 1); continue; } ctx.globalAlpha = Math.sin((s / 2) * Math.PI); ctx.fillStyle = "#ecebe7"; ctx.font = `600 ${px * 2}px ${fonteMono()}`; ctx.fillText("z", z.x + Math.sin(s * 3) * px, z.y - s * px * 4); }
         ctx.globalAlpha = 1;
       };
       raf = requestAnimationFrame(loop);

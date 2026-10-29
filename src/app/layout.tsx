@@ -2,33 +2,47 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 
-// texto: Inter; rotulos e numeros: Geist Mono (as mesmas do app); destaques
-// em italico: Instrument Serif.
-import "@fontsource-variable/inter";
-import "@fontsource-variable/geist-mono";
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/instrument-serif/400-italic.css";
+import { geistMono, instrumentSerif, inter } from "../fonts";
 import "../styles/globals.css";
+import { AUTOR, DESCRICAO, SITE, TITULO } from "../lib/site";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://meuclaudinho.com.br";
 const OBRA = `try{if(!sessionStorage.getItem("obraVista")&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("obra")}catch(e){}`;
 
+// A imagem de compartilhamento (opengraph-image.jpg / twitter-image.jpg) e os
+// icones (icon.png, apple-icon.png, favicon.ico) ficam em src/app: o Next gera
+// as tags com tamanho, tipo e endereco completo sozinho.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Claudinho: o seu Claude Code, agora com mais vida",
-  description:
-    "Um app de desktop que conversa com o Claude Code de verdade, com papéis de parede em ASCII vivos, o Clawd do seu lado, permissões com diff, desfazer, ramificar e personalização total.",
-  authors: [{ name: "Luis Roberto", url: "https://luisrobertoportifolio.com" }],
-  icons: { icon: [{ url: "/icone.png", type: "image/png" }], apple: "/apple-touch-icon.png" },
+  title: { default: TITULO, template: "%s · Claudinho" },
+  description: DESCRICAO,
+  applicationName: "Claudinho",
+  keywords: [
+    "Claudinho", "Claude Code", "app do Claude Code", "Claude Code para Windows", "interface para o Claude Code", "GUI do Claude Code",
+    "Claude Agent SDK", "Anthropic", "Clawd", "papel de parede ASCII", "papel de parede animado", "Wallpaper Engine", "IA para programar",
+  ],
+  authors: [{ name: AUTOR.nome, url: AUTOR.url }],
+  creator: AUTOR.nome,
+  publisher: AUTOR.nome,
+  category: "technology",
+  alternates: { canonical: "/", languages: { "pt-BR": "/" } },
+  robots: {
+    index: true, follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
   openGraph: {
     type: "website",
+    url: "/",
     locale: "pt_BR",
     siteName: "Claudinho",
-    title: "Claudinho: o seu Claude Code, agora com mais vida",
-    description: "Papéis de parede ASCII vivos, o Clawd do seu lado e tudo do Claude Code numa interface que mostra o que ele está fazendo.",
-    images: [{ url: "/assets/telas/conversa-1440.webp", width: 1440, height: 920 }],
+    title: TITULO,
+    description: "Papéis de parede ASCII vivos, o Clawd do seu lado e tudo do Claude Code numa interface que mostra o que ele está fazendo. Grátis para Windows.",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    card: "summary_large_image",
+    title: TITULO,
+    description: "Papéis de parede ASCII vivos, o Clawd do seu lado e tudo do Claude Code. Grátis para Windows.",
+  },
+  formatDetection: { telephone: false, email: false, address: false },
 };
 
 export const viewport: Viewport = {
@@ -40,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${geistMono.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>
       <head>
         {/* antes de pintar: na primeira visita da sessao o Clawd constroi o topo */}
         <script dangerouslySetInnerHTML={{ __html: OBRA }} />

@@ -357,10 +357,11 @@ function Final() {
       <div className="final-conteudo" data-surge>
         <Clawd pose="olha" px={7} fala={FALAS_CLAWD} />
         <Titulo partes={["Bora dar ", ["vida"], " ao seu Claude Code?"]} />
-        <p>Gratuito e de código aberto. O instalador sai assim que terminar de ser testado no dia a dia: quem quiser, baixa e usa.</p>
+        <p>Gratuito e de código aberto. Baixe, instale e abra: ele usa o Claude Code que já está no seu computador.</p>
         <Baixar />
       </div>
       <footer className="rodape">
+        <p className="autor">Feito por <a href="https://luisrobertoportifolio.com" target="_blank" rel="noreferrer">Luis Roberto</a> · código aberto no <a href="https://github.com/Lu1sR0/claudinho" target="_blank" rel="noreferrer">GitHub</a></p>
         <p>Claudinho é um projeto independente de fã. Não é afiliado nem endossado pela Anthropic. Claude, Claude Code e Clawd são marcas da Anthropic.</p>
         <p>Animações da biblioteca <a href="https://www.ascii-magic.com/ascii" target="_blank" rel="noreferrer">ASCII Magic</a> (MIT). Ideia dos papéis de parede vivos inspirada no conceito de Marko Vineli.</p>
       </footer>

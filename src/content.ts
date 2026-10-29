@@ -11,7 +11,17 @@ export const TEMAS_VITRINE = [
   { id: "arcade", nome: "Arcade", nota: "naves e alienígenas" },
 ] as const;
 
-export const FALAS_CLAWD = ["oi", "tô aqui", "bora codar?", "clica de novo", "sou o Clawd"];
+// O que o Clawd fala quando alguem toca nele (no rodape e nos cartoes).
+export const FALAS_CLAWD = [
+  "oi!", "ei, faz cócegas", "bora codar?", "clica de novo que eu pulo", "sou o Clawd, prazer", "pode me arrastar, eu deixo",
+  "tô de olho", "hehe", "de novo?!", "boop", "você clica bonito", "eu sou feito de quadradinhos", "minhas pernas são 4 pixels",
+  "laranja é minha cor favorita", "já salvou o arquivo?", "commitou hoje?", "isso aí é bug ou feature?", "funciona na minha máquina",
+  "rodou de primeira? desconfia", "git push e reza", "ponto e vírgula salva vidas", "bugs têm medo de mim", "deploy na sexta? coragem",
+  "me baixa, vai", "lá no app eu tenho até academia", "eu durmo quando o plano acaba", "já tomou água hoje?",
+  "o fundo ali em cima é ao vivo", "testa pedir um tema pro Claude", "meu sonho é virar sticker", "você é meu humano favorito",
+  "uau, que clique", "ai, meu pixel", "segura a emoção", "último pulo… mentira", "me joga lá pro alto!", "isso é um easter egg? talvez",
+  "eu sei dançar (não sei)", "tô de plantão", "um teste a mais nunca matou ninguém", "Ctrl + Z não funciona em mim",
+];
 
 export const PASSOS = [
   { n: "01", titulo: "Abra o Claudinho", texto: "Um clique no ícone do Clawd. Ele usa o Claude Code que já está no seu computador, com o seu login." },
@@ -52,6 +62,8 @@ export const DUVIDAS = [
   { p: "Quanto custa?", r: "Nada. O Claudinho é gratuito e aberto: quem quiser baixa e usa. Você só precisa do Claude Code instalado e de uma conta do Claude, como já precisaria para usar o Claude Code." },
   { p: "Gasta mais do meu plano do que o Claude Code?", r: "Não. Por baixo é o próprio Claude Code, com as mesmas instruções e ferramentas. Os papéis de parede, a música e o Clawd rodam no seu computador e não gastam nada." },
   { p: "Minhas conversas do claude.ai aparecem?", r: "Não. Aparecem as conversas do Claude Code (terminal, aba Code do app do Claude e o próprio Claudinho), que ficam salvas no seu computador. As do chat do claude.ai ficam nos servidores da Anthropic." },
+  { p: "Como o Claudinho entra no Claude?", r: "Pelo Claude Code que já está no seu computador, com o login dele (o seu plano). Se preferir, dá pra usar uma chave de API da Anthropic em Personalizar → Geral → Conta; a chave fica cifrada pelo sistema." },
+  { p: "O Windows avisou que o app não é reconhecido. É seguro?", r: "O instalador ainda não tem assinatura digital, então o Windows mostra esse aviso para qualquer app novo. Clique em Mais informações → Executar assim mesmo. O código é aberto no GitHub." },
   { p: "Funciona no Mac ou no Linux?", r: "O Claudinho nasceu no Windows, e a versão para Mac vem em seguida. Linux ainda não está nos planos." },
   { p: "Posso usar meus MCPs, skills e o CLAUDE.md?", r: "Sim. Tudo o que o seu Claude Code carrega o Claudinho carrega junto: MCPs, conectores, skills, comandos e memória." },
 ];
@@ -59,7 +71,7 @@ export const DUVIDAS = [
 // Instaladores. Enquanto a url for null, o botao aparece como "em breve";
 // quando sair um instalador, e so colocar o link aqui.
 export const DOWNLOADS = {
-  windows: { nome: "Windows", url: null as string | null, nota: "Windows 10 ou 11" },
+  windows: { nome: "Windows", url: "https://github.com/Lu1sR0/claudinho/releases/latest/download/Claudinho-Setup.exe" as string | null, nota: "Windows 10 ou 11 · 124 MB" },
   mac: { nome: "Mac", url: null as string | null, nota: "macOS 12 ou mais novo" },
 };
 

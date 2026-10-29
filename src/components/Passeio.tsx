@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { FALAS_SECAO } from "../content";
+import { FALAS_CLAWD, FALAS_SECAO } from "../content";
 import { reducedMotion } from "../lib/motion";
 import { carregaMotor } from "../lib/vivo";
 
@@ -11,7 +11,7 @@ import { carregaMotor } from "../lib/vivo";
 // pula no clique e pode ser arrastado (e cai, quica e fica tonto).
 
 const LARANJA = "#d97757";
-const CLIQUE = ["opa!", "hehe", "de novo!", "faz cócegas", "tô de olho"];
+const CLIQUE = FALAS_CLAWD;
 const G = 2600, CHAO = 10;
 
 type Modo = "anda" | "para" | "arrastado" | "cai" | "tonto";

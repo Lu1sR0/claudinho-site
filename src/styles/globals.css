@@ -314,3 +314,6 @@ html.obra .hero h1 .palavra, html.obra .hero .sub, html.obra .hero .acoes, html.
 .paletas button:hover { color: var(--texto); }
 .paletas button.on { color: var(--texto); border-color: var(--acento); }
 .junto { white-space: nowrap; }
+.rodape .autor { color: var(--texto-2); font-size: 14px; }
+.rodape .autor a { color: var(--acento-2); font-weight: 600; text-decoration: none; }
+.rodape .autor a:hover { text-decoration: underline; }

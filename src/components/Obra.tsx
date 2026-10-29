@@ -10,10 +10,10 @@ import { carregaMotor } from "../lib/vivo";
 // secao. O conteudo aparece de ladrilhos ASCII na borda por onde ele passa.
 // Ao terminar o topo ele pula para o chao e vira o Clawd que passeia.
 
-const LARANJA = "#d97757", AMARELO = "#f2c14e", GLIFOS = "▓▒░#*+ts%✻";
+const LARANJA = "#d97757", AMARELO = "#f2c14e";
 
 type Linha = { itens: HTMLElement[] };
-type Particula = { x: number; y: number; ch: string; t0: number; vida: number; vx?: number; vy?: number; capacete?: boolean };
+type Particula = { x: number; y: number; t0: number; vida: number };
 
 const caixa = (els: HTMLElement[]) => {
   const rs = els.map((e) => e.getBoundingClientRect());
@@ -49,18 +49,17 @@ export function Obra() {
       redim(); addEventListener("resize", redim);
 
       // o construtor
-      const ob = { x: -999, y: -999, visivel: false, olhar: [0, 1] as [number, number], passo: 0, bolha: "", feixe: null as null | { x: number; y0: number; y1: number } };
+      const ob = { x: -999, y: -999, visivel: false, alfa: 0, sai: false, olhar: [0, 1] as [number, number], passo: 0, bolha: "", feixe: null as null | { x: number; y0: number; topo: number; y1: number } };
       const particulas: Particula[] = [];
       let ativo = false;
       const espera = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
       const quadro = () => new Promise<number>((r) => requestAnimationFrame(r));
 
-      const puff = (x: number, y: number, n = 14) => {
-        for (let k = 0; k < n; k++) particulas.push({ x, y, ch: GLIFOS[k % GLIFOS.length], t0: performance.now(), vida: 0.5, vx: (Math.random() - 0.5) * 260, vy: -Math.random() * 220 });
-      };
+      // he fades in and out (no burst)
+      const some = () => { ob.sai = true; ob.bolha = ""; };
       // pula ate (x, y) num arco
       const vaiPara = async (x: number, y: number, ms = 220) => {
-        if (!ob.visivel) { ob.x = x; ob.y = y; ob.visivel = true; puff(x + CW / 2, y + CH / 2, 10); return; }
+        if (!ob.visivel || ob.sai) { ob.x = x; ob.y = y; ob.visivel = true; ob.sai = false; ob.alfa = Math.min(ob.alfa, 0.2); return; }
         const x0 = ob.x, y0 = ob.y, t0 = performance.now();
         for (;;) {
           const p = Math.min(1, (performance.now() - t0) / ms);
@@ -82,8 +81,9 @@ export function Obra() {
           const borda = r.left + (r.right - r.left) * e;
           for (const it of l.itens) { const ir = it.getBoundingClientRect(); mostra(it, Math.max(0, Math.min(1, (borda - ir.left) / Math.max(1, ir.width)))); }
           ob.x = borda - CW / 2; ob.y = r.top - CH - 6; ob.passo += 0.35; ob.olhar = [0, 1];
-          ob.feixe = { x: borda, y0: ob.y + CH, y1: r.bottom };
-          for (let y = r.top; y < r.bottom; y += 14) if (Math.random() < 0.55) particulas.push({ x: borda + (Math.random() - 0.7) * 10, y: y + Math.random() * 6, ch: GLIFOS[(Math.random() * GLIFOS.length) | 0], t0: performance.now(), vida: 0.32 });
+          ob.feixe = { x: borda, y0: ob.y + CH, topo: r.top, y1: r.bottom };
+          // a few small sparks that fade where they are
+          for (let y = r.top; y < r.bottom; y += 22) if (Math.random() < 0.07) particulas.push({ x: borda + (Math.random() - 0.5) * 8, y: y + Math.random() * 18, t0: performance.now(), vida: 0.55 });
           if (p >= 1 || pulou) break;
           await quadro();
         }
@@ -97,22 +97,26 @@ export function Obra() {
         raf = 0;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
         const agora = performance.now();
-        ctx.font = `600 ${Math.round(px * 2.6)}px "Geist Mono Variable", monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
         for (let k = particulas.length - 1; k >= 0; k--) {
           const p = particulas[k], s = (agora - p.t0) / 1000;
           if (s > p.vida) { particulas.splice(k, 1); continue; }
-          const a = 1 - s / p.vida, x = p.x + (p.vx || 0) * s, y = p.y + (p.vy || 0) * s + (p.vx != null ? 700 * s * s : 0);
-          if (p.capacete) { ctx.globalAlpha = a; desenhaCapacete(x - CW / 2, y, s * 7); continue; }
-          ctx.globalAlpha = a * 0.9; ctx.fillStyle = LARANJA;
-          ctx.beginPath(); ctx.roundRect(x - 5, y - 7, 10, 13, 2); ctx.fill();
-          ctx.globalAlpha = a; ctx.fillStyle = "#fff4ec"; ctx.fillText(p.ch, x, y);
+          ctx.globalAlpha = (1 - s / p.vida) * 0.85; ctx.fillStyle = "#f6cdb3"; ctx.fillRect(Math.round(p.x - 1.5), Math.round(p.y - 1.5), 3, 3);
         }
         ctx.globalAlpha = 1;
+        // the edge being built: a thin line of light, and a faint beam up to him
         if (ob.feixe) {
-          ctx.fillStyle = "#ffcf9e";
-          for (let y = ob.feixe.y0; y < ob.feixe.y1; y += 5) if (Math.random() < 0.8) ctx.fillRect(Math.round(ob.feixe.x - 1), Math.round(y), 2, 3);
+          const f = ob.feixe, alto = f.y1 - f.topo, g = ctx.createLinearGradient(0, f.topo, 0, f.y1);
+          g.addColorStop(0, "rgba(232,147,111,0)"); g.addColorStop(0.5, "rgba(232,147,111,0.95)"); g.addColorStop(1, "rgba(232,147,111,0)");
+          ctx.fillStyle = "rgba(217,119,87,0.12)"; ctx.fillRect(Math.round(f.x - 8), f.topo, 16, alto);
+          ctx.fillStyle = g; ctx.fillRect(Math.round(f.x - 1), f.topo, 2, alto);
+          ctx.fillStyle = "rgba(255,207,158,0.4)";
+          for (let y = f.y0 + 2; y < f.topo - 2; y += 6) ctx.fillRect(Math.round(f.x - 1), Math.round(y), 2, 2);
         }
         if (ob.visivel) {
+          ob.alfa += ((ob.sai ? 0 : 1) - ob.alfa) * 0.22;
+          if (ob.sai && ob.alfa < 0.03) { ob.visivel = false; ob.sai = false; }
+          ctx.globalAlpha = ob.alfa;
           const pa = Math.floor(ob.passo) % 2;
           desenhaClawd(ctx, { x: Math.round(ob.x), y: Math.round(ob.y), pw: PW, ph: PH, cor: LARANJA, olhar: ob.olhar, pernas: pa ? [px, 0, px, 0] : [0, px, 0, px], bracos: true, braco: ob.feixe ? [0, 1] : [0, 0] });
           desenhaCapacete(ob.x, ob.y, 0);
@@ -122,8 +126,9 @@ export function Obra() {
             ctx.fillStyle = "#ecebe7"; ctx.beginPath(); ctx.roundRect(bx, by, w, 20, 4); ctx.fill();
             ctx.fillStyle = "#121110"; ctx.fillText(ob.bolha, bx + w / 2, by + 10.5);
           }
+          ctx.globalAlpha = 1;
         }
-        if (ativo || particulas.length) raf = requestAnimationFrame(desenha);
+        if (ativo || particulas.length || ob.visivel) raf = requestAnimationFrame(desenha);
       };
       const acorda = () => { if (!raf) raf = requestAnimationFrame(desenha); };
       function desenhaCapacete(x: number, y: number, giro: number) {
@@ -142,7 +147,7 @@ export function Obra() {
         if (rodando) return;
         rodando = true; ativo = true; acorda();
         while (fila.length && vivo) await fila.shift()!();
-        if (ob.visivel) { puff(ob.x + CW / 2, ob.y + CH / 2); ob.visivel = false; ob.bolha = ""; }
+        if (ob.visivel) { some(); acorda(); }
         rodando = false; ativo = false;
       };
       const enfileira = (job: () => Promise<void>) => { fila.push(job); roda(); };
@@ -175,8 +180,7 @@ export function Obra() {
           ob.bolha = "";
           // o pulo para o chao: ele vira o Clawd que passeia; o capacete sai voando
           window.dispatchEvent(new CustomEvent("obra-pronta", { detail: { x: ob.visivel ? ob.x : null, y: ob.y } }));
-          if (ob.visivel) particulas.push({ x: ob.x + CW / 2, y: ob.y, ch: "", t0: performance.now(), vida: 0.9, vx: 120, vy: -260, capacete: true });
-          ob.visivel = false;
+          ob.visivel = false; ob.alfa = 0;
           termina();
         });
       }

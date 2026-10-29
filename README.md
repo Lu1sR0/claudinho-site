@@ -1,6 +1,8 @@
 # Claudinho — site
 
-Landing page do Claudinho. Next.js 16 (App Router), React 19, Tailwind v4, GSAP + ScrollTrigger e Lenis.
+Landing page do Claudinho: https://claudinho-site-lilac.vercel.app
+
+Cada push na branch main publica sozinho na Vercel. Next.js 16 (App Router), React 19, Tailwind v4, GSAP + ScrollTrigger e Lenis.
 
 ```bash
 npm install

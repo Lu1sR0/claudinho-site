@@ -12,6 +12,9 @@ import { carregaMotor } from "../lib/vivo";
 // pula no clique e pode ser arrastado (e cai, quica e fica tonto).
 
 const LARANJA = "#d97757";
+// a largura que se ve de fato: sem a barra de rolagem e sem nada que tenha
+// vazado para o lado (innerWidth cresce junto no celular)
+const larg = () => document.documentElement.clientWidth || innerWidth;
 const CLIQUE = FALAS_CLAWD;
 const G = 2600, CHAO = 10;
 
@@ -27,11 +30,11 @@ export function Passeio() {
 
     carregaMotor().then(({ CLAWD, desenhaClawd }) => {
       if (!vivo) return;
-      const px = innerWidth < 640 ? 3 : 4, PW = px, PH = px * 2, MX = PW * 2, MT = PH * 2;
+      const px = larg() < 640 ? 3 : 4, PW = px, PH = px * 2, MX = PW * 2, MT = PH * 2;
       const CW = CLAWD.W * PW + MX * 2, CH = CLAWD.H * PH + MT + px + 2, dpr = Math.min(2, devicePixelRatio || 1);
       cv.width = CW * dpr; cv.height = CH * dpr; cv.style.width = CW + "px"; cv.style.height = CH + "px";
       const ctx = cv.getContext("2d")!;
-      const limite = (x: number) => Math.max(6, Math.min(innerWidth - CW - 6, x));
+      const limite = (x: number) => Math.max(6, Math.min(larg() - CW - 6, x));
 
       let modo: Modo = quieto ? "para" : "anda", x = quieto ? 16 : -CW - 20, alvo = 70, alt = 0, vx = 0, vy = 0, dir = 1;
       let ate = performance.now() + 1500, fase = 0, ultimo = performance.now(), correAte = 0, olharAte = 0, olharCima = false;
@@ -49,7 +52,7 @@ export function Passeio() {
       };
       const novoAlvo = () => {
         const longe = Math.random() < 0.35;
-        alvo = limite(longe ? Math.random() * innerWidth : x + (Math.random() - 0.5) * 360);
+        alvo = limite(longe ? Math.random() * larg() : x + (Math.random() - 0.5) * 360);
         modo = "anda";
       };
       // entrada: se o Clawd de capacete esta construindo o topo, nasce do pulo dele
@@ -190,7 +193,7 @@ export function Passeio() {
           pernas = angV > 0 ? [-px, 0, -px, 0] : [0, -px, 0, -px];
         } else if (modo === "cai") {
           vy -= G * dt; alt += vy * dt; x += vx * dt; vx *= 0.995; ang *= Math.exp(-5 * dt);
-          if (x < 6 || x > innerWidth - CW - 6) { vx = -vx * 0.5; x = limite(x); }
+          if (x < 6 || x > larg() - CW - 6) { vx = -vx * 0.5; x = limite(x); }
           braco = vy > 0 ? [1, 1] : [2, 2]; pernas = vy > 0 ? [px, px, px, px] : [-px, -px, -px, -px];
           if (alt <= 0) {
             alt = 0; ang = 0; cv.style.transformOrigin = "";
@@ -215,7 +218,7 @@ export function Passeio() {
         cv.style.transform = `translate3d(${Math.round(x)}px, ${-Math.round(alt)}px, 0) rotate(${inclina}rad)`;
         sombra.style.transform = `translate3d(${Math.round(x + CW / 2 - 30)}px, 0, 0) scale(${Math.max(0.35, 1 - alt / 260)})`;
         sombra.style.opacity = String(Math.max(0.15, 0.5 - alt / 500));
-        const meio = balao.offsetWidth / 2 + 8, bx = Math.max(meio, Math.min(innerWidth - meio, x + CW / 2));
+        const meio = balao.offsetWidth / 2 + 8, bx = Math.max(meio, Math.min(larg() - meio, x + CW / 2));
         balao.style.transform = `translate3d(${Math.round(bx)}px, ${-Math.round(alt + CH + 10)}px, 0) translateX(-50%)`;
         if (ms > falaAte) balao.classList.remove("on");
       };

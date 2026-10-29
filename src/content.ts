@@ -63,7 +63,7 @@ export const DUVIDAS = [
   { p: "Gasta mais do meu plano do que o Claude Code?", r: "Não. Por baixo é o próprio Claude Code, com as mesmas instruções e ferramentas. Os papéis de parede, a música e o Clawd rodam no seu computador e não gastam nada." },
   { p: "Minhas conversas do claude.ai aparecem?", r: "Não. Aparecem as conversas do Claude Code (terminal, aba Code do app do Claude e o próprio Claudinho), que ficam salvas no seu computador. As do chat do claude.ai ficam nos servidores da Anthropic." },
   { p: "Como o Claudinho entra no Claude?", r: "Pelo Claude Code que já está no seu computador, com o login dele (o seu plano). Se preferir, dá pra usar uma chave de API da Anthropic em Personalizar → Geral → Conta; a chave fica cifrada pelo sistema." },
-  { p: "O Windows avisou que o app não é reconhecido. É seguro?", r: "O instalador ainda não tem assinatura digital, então o Windows mostra esse aviso para qualquer app novo. Clique em Mais informações → Executar assim mesmo. O código é aberto no GitHub." },
+  { p: "O Windows avisou que o app não é reconhecido. É seguro?", r: "O instalador ainda não tem assinatura digital, então o Windows mostra esse aviso para qualquer app novo. Clique em Mais informações → Executar assim mesmo." },
   { p: "Funciona no Mac ou no Linux?", r: "O Claudinho nasceu no Windows, e a versão para Mac vem em seguida. Linux ainda não está nos planos." },
   { p: "Posso usar meus MCPs, skills e o CLAUDE.md?", r: "Sim. Tudo o que o seu Claude Code carrega o Claudinho carrega junto: MCPs, conectores, skills, comandos e memória." },
 ];

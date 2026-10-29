@@ -361,7 +361,7 @@ function Final() {
         <Baixar />
       </div>
       <footer className="rodape">
-        <p className="autor">Feito por <a href="https://luisrobertoportifolio.com" target="_blank" rel="noreferrer">Luis Roberto</a> · código aberto no <a href="https://github.com/Lu1sR0/claudinho" target="_blank" rel="noreferrer">GitHub</a></p>
+        <p className="autor">Feito por <a href="https://luisrobertoportifolio.com" target="_blank" rel="noreferrer">Luis Roberto</a></p>
         <p>Claudinho é um projeto independente de fã. Não é afiliado nem endossado pela Anthropic. Claude, Claude Code e Clawd são marcas da Anthropic.</p>
         <p>Animações da biblioteca <a href="https://www.ascii-magic.com/ascii" target="_blank" rel="noreferrer">ASCII Magic</a> (MIT). Ideia dos papéis de parede vivos inspirada no conceito de Marko Vineli.</p>
       </footer>

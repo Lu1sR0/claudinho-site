@@ -40,14 +40,6 @@ export function setupReveals() {
         scrollTrigger: { trigger: el, start: "top 88%", once: true },
       }),
     );
-    // titulos: as palavras sobem uma a uma de tras da mascara
-    // (o h1 do topo tem animacao propria, na entrada)
-    gsap.utils.toArray<HTMLElement>("h2[data-titulo]").forEach((el) =>
-      gsap.from(el.querySelectorAll(".palavra > span"), {
-        yPercent: 115, rotate: 4, duration: 1.1, ease: "expo.out", stagger: 0.05,
-        scrollTrigger: { trigger: el, start: "top 88%", once: true },
-      }),
-    );
     // as telas de "Por dentro" abrem de um recorte enquanto a pagina rola
     gsap.utils.toArray<HTMLElement>("[data-abre]").forEach((el) =>
       gsap.fromTo(el, { clipPath: "inset(9% 7% 9% 7% round 28px)", scale: 0.94 }, {

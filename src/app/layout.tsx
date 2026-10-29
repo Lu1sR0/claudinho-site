@@ -9,7 +9,8 @@ import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import "../styles/globals.css";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:5191";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://claudinho-site-lilac.vercel.app";
+const OBRA = `try{if(!sessionStorage.getItem("obraVista")&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("obra")}catch(e){}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -37,7 +38,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* antes de pintar: na primeira visita da sessao o Clawd constroi o topo */}
+        <script dangerouslySetInnerHTML={{ __html: OBRA }} />
+      </head>
       <body>{children}</body>
     </html>
   );

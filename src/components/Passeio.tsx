@@ -35,6 +35,8 @@ export function Passeio() {
       let modo: Modo = quieto ? "para" : "anda", x = quieto ? 16 : -CW - 20, alvo = 70, alt = 0, vx = 0, vy = 0, dir = 1;
       let ate = performance.now() + 1500, fase = 0, ultimo = performance.now(), correAte = 0, olharAte = 0, olharCima = false;
       let piscaAte = 0, proxPisca = 0, falaAte = 0, ultimaFala = 0, pendente = "", tontoAte = 0, jogado = false;
+      // pendulo: pendurado no ponto onde foi pego, balanca com o mouse
+      let ang = 0, angV = 0, pvx = 0, pvxAnt = 0, escondido = false;
       let mx: number | null = null, my = 0, ultimoScroll = scrollY, ultimoScrollT = performance.now(), scrollParado = performance.now();
       let segura: { dx: number; dy: number; x0: number; y0: number; moveu: boolean; amostras: [number, number, number][] } | null = null;
 
@@ -49,7 +51,19 @@ export function Passeio() {
         alvo = limite(longe ? Math.random() * innerWidth : x + (Math.random() - 0.5) * 360);
         modo = "anda";
       };
-      if (!quieto) setTimeout(() => { alvo = limite(60 + Math.random() * 80); pendente = FALAS_SECAO.topo[0]; }, 900);
+      // entrada: se o Clawd de capacete esta construindo o topo, nasce do pulo dele
+      const entra = (e?: Event) => {
+        const d = (e as CustomEvent<{ x: number | null; y: number }> | undefined)?.detail;
+        escondido = false; cv.style.visibility = "";
+        if (d && d.x != null) {
+          x = d.x - MX; alt = Math.max(0, innerHeight - CHAO - CH + MT - d.y);
+          modo = "cai"; vy = 300; vx = 160; jogado = false;
+          fala("pronto! agora é com você", true);
+        } else { alvo = limite(60 + Math.random() * 80); pendente = FALAS_SECAO.topo[0]; }
+      };
+      if (quieto) { /* fica parado no canto */ }
+      else if (document.documentElement.classList.contains("obra")) { escondido = true; cv.style.visibility = "hidden"; addEventListener("obra-pronta", entra, { once: true }); }
+      else setTimeout(entra, 900);
 
       // ---- input ----------------------------------------------------------------------
       const naCaixa = (e: PointerEvent) => { const r = cv.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; };
@@ -58,16 +72,21 @@ export function Passeio() {
         try { cv.setPointerCapture(e.pointerId); } catch { /* ponteiro ja solto */ }
         const r = cv.getBoundingClientRect();
         segura = { dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moveu: false, amostras: [] };
+        pvx = pvxAnt = 0;
       };
       const move = (e: PointerEvent) => {
         if (e.pointerType === "mouse") { mx = e.clientX; my = e.clientY; }
         if (!segura) return;
-        if (!segura.moveu && Math.hypot(e.clientX - segura.x0, e.clientY - segura.y0) > 5 && !quieto) { segura.moveu = true; modo = "arrastado"; fala("ei! me põe no chão", true); }
+        if (!segura.moveu && Math.hypot(e.clientX - segura.x0, e.clientY - segura.y0) > 5 && !quieto) {
+          segura.moveu = true; modo = "arrastado"; ang = angV = 0; cv.style.transformOrigin = `${segura.dx}px ${segura.dy}px`; fala("ei! me põe no chão", true);
+        }
         if (modo !== "arrastado") return;
         x = e.clientX - segura.dx;
         alt = Math.max(0, innerHeight - CHAO - (e.clientY - segura.dy + CH));
         segura.amostras.push([e.clientX, e.clientY, performance.now()]);
         if (segura.amostras.length > 5) segura.amostras.shift();
+        const am = segura.amostras;
+        if (am.length > 1) { const a = am[am.length - 2], b = am[am.length - 1]; pvx = pvx * 0.5 + ((b[0] - a[0]) / Math.max(0.008, (b[2] - a[2]) / 1000)) * 0.5; }
       };
       const solta = () => {
         if (!segura) return;
@@ -127,7 +146,7 @@ export function Passeio() {
 
       limpa = () => {
         cv.removeEventListener("pointerdown", baixo); removeEventListener("pointermove", move); removeEventListener("pointerup", solta); removeEventListener("pointercancel", solta);
-        document.removeEventListener("pointerover", aponta); removeEventListener("scroll", rola); removeEventListener("resize", redim); io.disconnect();
+        document.removeEventListener("pointerover", aponta); removeEventListener("obra-pronta", entra); removeEventListener("scroll", rola); removeEventListener("resize", redim); io.disconnect();
       };
 
       // ---- loop -----------------------------------------------------------------------
@@ -135,6 +154,7 @@ export function Passeio() {
         if (!vivo) return;
         raf = requestAnimationFrame(quadro);
         const dt = Math.min(0.05, (ms - ultimo) / 1000); ultimo = ms;
+        if (escondido) return;
         const t = ms / 1000, cx = x + CW / 2, cy = innerHeight - CHAO - alt - CH / 2;
         const perto = mx != null ? Math.hypot(mx - cx, my - cy) : 1e9;
         if (ms > proxPisca) { piscaAte = ms + 140; proxPisca = ms + 2000 + Math.random() * 3500; }
@@ -159,13 +179,19 @@ export function Passeio() {
           bob = Math.round(Math.sin(t * 2)) * 0.5;
           if (!quieto && ms > ate && perto > 120) novoAlvo();
         } else if (modo === "arrastado") {
-          braco = [2, 2]; olhar = [0, 1]; pernas = [-px, -px, -px, -px];
+          // pendulo: a aceleracao do mouse empurra, a gravidade traz de volta
+          const acc = (pvx - pvxAnt) / Math.max(dt, 0.008); pvxAnt = pvx; pvx *= Math.exp(-6 * dt);
+          angV += (-17 * Math.sin(ang) + acc * 0.0018 + pvx * 0.0016) * dt;
+          angV *= Math.exp(-0.6 * dt); ang = Math.max(-1.3, Math.min(1.3, ang + angV * dt));
+          if (Math.abs(angV) > 7) fala("uiii!");
+          braco = [2, 2]; olhar = [ang > 0.2 ? -1 : ang < -0.2 ? 1 : 0, 1];
+          pernas = angV > 0 ? [-px, 0, -px, 0] : [0, -px, 0, -px];
         } else if (modo === "cai") {
-          vy -= G * dt; alt += vy * dt; x += vx * dt; vx *= 0.995;
+          vy -= G * dt; alt += vy * dt; x += vx * dt; vx *= 0.995; ang *= Math.exp(-5 * dt);
           if (x < 6 || x > innerWidth - CW - 6) { vx = -vx * 0.5; x = limite(x); }
           braco = vy > 0 ? [1, 1] : [2, 2]; pernas = vy > 0 ? [px, px, px, px] : [-px, -px, -px, -px];
           if (alt <= 0) {
-            alt = 0;
+            alt = 0; ang = 0; cv.style.transformOrigin = "";
             if (vy < -700) { vy = -vy * 0.32; vx *= 0.6; }
             else if (jogado && vy < -380) { modo = "tonto"; tontoAte = ms + 1300; vx = 0; fala("ufa…", true); }
             else { modo = "para"; ate = ms + 1200; vx = 0; }
@@ -183,7 +209,7 @@ export function Passeio() {
           ctx.fillStyle = "#f5c66b";
           for (let k = 0; k < 3; k++) { const a = t * 6 + (k * Math.PI * 2) / 3; ctx.fillRect(Math.round(CW / 2 + Math.cos(a) * PW * 5 - px / 2), Math.round(MT - PH * 0.6 + Math.sin(a) * PH * 0.5), px, px); }
         }
-        const inclina = modo === "arrastado" ? Math.max(-0.4, Math.min(0.4, (mx != null ? (mx - cx) : 0) * -0.004)) : modo === "cai" ? vx * 0.0003 : 0;
+        const inclina = modo === "arrastado" || (modo === "cai" && Math.abs(ang) > 0.01) ? ang : modo === "cai" ? vx * 0.0003 : 0;
         cv.style.transform = `translate3d(${Math.round(x)}px, ${-Math.round(alt)}px, 0) rotate(${inclina}rad)`;
         sombra.style.transform = `translate3d(${Math.round(x + CW / 2 - 30)}px, 0, 0) scale(${Math.max(0.35, 1 - alt / 260)})`;
         sombra.style.opacity = String(Math.max(0.15, 0.5 - alt / 500));

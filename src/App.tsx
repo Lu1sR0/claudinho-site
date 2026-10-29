@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { Baixar, useSistema } from "./components/Baixar";
 import { Clawd } from "./components/Clawd";
+import { DemoDiff, DemoPlano, DemoRaciocinio } from "./components/Demos";
+import { Obra } from "./components/Obra";
 import { Passeio } from "./components/Passeio";
 import { Titulo } from "./components/Titulo";
 import { Vivo } from "./components/Vivo";
@@ -11,6 +13,75 @@ import { DUVIDAS, FALAS_CLAWD, PASSOS, PERSONALIZAR, RECURSOS, TELAS, TEMAS_VITR
 import { animaFaixa, gsap, reducedMotion, ScrollTrigger, scrollToTarget, setupInteracoes, setupReveals, startSmoothScroll } from "./lib/motion";
 
 const GLIFOS = ["·", "✢", "✳", "✶", "✻", "✽"];
+
+// "Peca um tema": palavras que levam a cada tema (no app, quem entende e o Claude)
+const PALAVRAS: [RegExp, string][] = [
+  [/claude|anthropic|laranja|da casa/i, "claude"],
+  [/espa[cç]|gal[aá]x|estrela|planeta|universo|lua|cosmo/i, "galaxia"],
+  [/tartaruga|mar|praia|[aá]gua|lagoa|oceano|honu|ilha/i, "lagoon"],
+  [/peixe|carpa|koi|lago/i, "koi"],
+  [/fogo|lareira|frio|quent|aconcheg|inverno|cabana/i, "lareira"],
+  [/flor|sakura|cerejeira|jap[aã]o|rosa|primavera|jardim/i, "sakura"],
+  [/chuva|lo-?fi|estud|relax|calm|janela|noite|foco/i, "chuva"],
+  [/jogo|arcade|retr[oô]|game|nave|alien|pixel|fliperama/i, "arcade"],
+];
+
+function PedeTema({ aoEscolher }: { aoEscolher: (id: string) => void }) {
+  const [texto, setTexto] = useState(""), [resposta, setResposta] = useState(""), [ocupado, setOcupado] = useState(false);
+  const timer = useRef(0);
+  useEffect(() => () => clearInterval(timer.current), []);
+  const pede = (t: string) => {
+    t = t.trim();
+    if (!t || ocupado) return;
+    const achou = PALAVRAS.find(([re]) => re.test(t));
+    const outros = TEMAS_VITRINE.slice(1), tema = achou ? TEMAS_VITRINE.find((x) => x.id === achou[1])! : outros[Math.floor(Math.random() * outros.length)];
+    const frase = achou ? `Trocando para ${tema.nome}.` : `Não tenho um tema assim, mas ${tema.nome} combina. Trocando.`;
+    setTexto(""); setOcupado(true); setResposta("");
+    let i = 0;
+    timer.current = window.setInterval(() => {
+      i += 1; setResposta(frase.slice(0, i));
+      if (i >= frase.length) { clearInterval(timer.current); setOcupado(false); aoEscolher(tema.id); }
+    }, 24);
+  };
+  return (
+    <form className="pede" onSubmit={(e) => { e.preventDefault(); pede(texto); }}>
+      {resposta && <p className="pede-resposta" aria-live="polite"><i aria-hidden="true">✻</i>{resposta}</p>}
+      <div className="pede-campo">
+        <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Peça um tema: “quero chuva pra estudar”" aria-label="Peça um tema ao Claude" maxLength={80} />
+        <button type="submit" aria-label="Enviar" disabled={ocupado}>↑</button>
+      </div>
+      <div className="pede-sugestoes">
+        {["algo espacial", "um lago com peixes", "frio, quero fogo"].map((x) => <button type="button" key={x} onClick={() => pede(x)} data-clawd-alvo="pede, pede!">{x}</button>)}
+      </div>
+    </form>
+  );
+}
+
+const PALETAS_SITE: [string, string, string][] = [
+  ["Claude", "#d97757", "#e8936f"], ["Oceano", "#3fb6d9", ""], ["Neon", "#ff3ea5", ""],
+  ["Floresta", "#5fb08a", ""], ["Ouro", "#e7b549", ""], ["Lavanda", "#a78bfa", ""],
+];
+
+function Paletas() {
+  const [on, setOn] = useState("Claude");
+  const aplica = ([nome, cor, cor2]: [string, string, string]) => {
+    setOn(nome);
+    const r = document.documentElement.style;
+    r.setProperty("--acento", cor); r.setProperty("--acento-2", cor2 || `color-mix(in srgb, ${cor} 78%, white)`);
+  };
+  return (
+    <div className="paletas">
+      <span>Teste aqui: as cores desta página mudam.</span>
+      <div role="group" aria-label="Cor de destaque">
+        {PALETAS_SITE.map((p) => (
+          <button key={p[0]} className={on === p[0] ? "on" : ""} onClick={() => aplica(p)} aria-pressed={on === p[0]} title={p[0]} data-clawd-alvo={`${p[0].toLowerCase()} fica bonito`}>
+            <i style={{ background: p[1] }} /><span>{p[0]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Tela({ id, alt, className, prioridade }: { id: string; alt: string; className?: string; prioridade?: boolean }) {
   return (
@@ -58,13 +129,17 @@ function Hero() {
   const sistema = useSistema();
   useEffect(() => {
     if (reducedMotion()) return;
+    // na primeira visita o Clawd de capacete monta o topo (Obra); nas outras, entra animado
+    const obra = document.documentElement.classList.contains("obra");
     const ctx = gsap.context(() => {
       gsap.from(".hero-fundo", { scale: 1.12, opacity: 0, duration: 2.2, ease: "expo.out" });
       gsap.from(".hero .selo", { y: -16, opacity: 0, scale: 0.9, duration: 0.9, ease: "back.out(2)", delay: 0.1 });
-      gsap.from(".hero h1 .palavra > span", { yPercent: 115, rotate: 5, duration: 1.2, ease: "expo.out", stagger: 0.06, delay: 0.2 });
-      gsap.from(".hero .sub, .hero .acoes, .hero .temas-rapidos", { y: 24, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08, delay: 0.55 });
-      gsap.from(".hero .janela", { y: 120, rotateX: 18, opacity: 0, duration: 1.6, ease: "expo.out", delay: 0.45 });
-      gsap.to(".hero .janela", { rotateX: 0, y: -40, ease: "none", scrollTrigger: { trigger: ".hero .janela", start: "top 85%", end: "bottom 30%", scrub: true } });
+      if (!obra) {
+        gsap.from(".hero h1 .palavra > span", { yPercent: 115, rotate: 5, duration: 1.2, ease: "expo.out", stagger: 0.06, delay: 0.2 });
+        gsap.from(".hero .sub, .hero .acoes, .hero .temas-rapidos", { y: 24, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08, delay: 0.55 });
+        gsap.from(".hero .janela", { y: 120, opacity: 0, duration: 1.6, ease: "expo.out", delay: 0.45 });
+      }
+      gsap.fromTo(".hero .janela", { rotateX: 14 }, { rotateX: 0, y: -40, ease: "none", scrollTrigger: { trigger: ".hero .janela", start: "top 95%", end: "bottom 30%", scrub: true } });
     });
     return () => ctx.revert();
   }, []);
@@ -124,6 +199,7 @@ function Temas() {
         <div className="vitrine-tela">
           <Vivo tema={tema} className="vitrine-canvas" />
           <p className="legenda"><b>{atual.nome}</b> · {atual.nota}</p>
+          <PedeTema aoEscolher={setTema} />
         </div>
         <ul className="vitrine-lista" role="list">
           {TEMAS_VITRINE.map((t) => (
@@ -150,9 +226,9 @@ function ClawdSecao() {
         <Titulo partes={["Um companheiro de ", ["pixel"], "."]} />
         <p className="texto">O mascote do Claude Code mora no Claudinho. Ele reage a tudo o que o Claude faz, e um pouco ao que você faz também.</p>
       </div>
-      <div className="clawd-grade">
+      <div className="clawd-grade" data-obra-grupo>
         {cards.map((c, i) => (
-          <article key={c.pose} className="clawd-card luz inclina" data-surge={i * 0.08} data-clawd-alvo={["sou eu!", "trabalhando…", "puxado, hein", "zzz… brincadeira"][i]}>
+          <article key={c.pose} className="clawd-card luz inclina" data-clawd-alvo={["sou eu!", "trabalhando…", "puxado, hein", "zzz… brincadeira"][i]}>
             <div className="clawd-palco"><Clawd pose={c.pose} px={5} fala={FALAS_CLAWD} /></div>
             <h3>{c.titulo}</h3>
             <p>{c.texto}</p>
@@ -163,6 +239,8 @@ function ClawdSecao() {
   );
 }
 
+const DESTAQUES: [number, React.ReactNode][] = [[0, <DemoDiff key="d" />], [3, <DemoPlano key="p" />], [5, <DemoRaciocinio key="r" />]];
+
 function Recursos() {
   return (
     <section id="recursos" className="secao recursos">
@@ -171,9 +249,17 @@ function Recursos() {
         <Titulo partes={["O mesmo motor. ", ["Muito"], " mais coisa à vista."]} />
         <p className="texto">Por baixo é o próprio Claude Code, pelo SDK oficial de agentes: as mesmas ferramentas, skills, MCPs e permissões. Em cima, uma interface que mostra o que ele está fazendo.</p>
       </div>
-      <div className="recursos-grade">
-        {RECURSOS.map((r, i) => (
-          <article key={r.titulo} className="recurso luz" data-surge={(i % 3) * 0.06}>
+      <div className="recursos-destaque" data-obra-grupo>
+        {DESTAQUES.map(([i, demo]) => (
+          <article key={RECURSOS[i].titulo} className="destaque luz">
+            {demo}
+            <div><h3>{RECURSOS[i].titulo}</h3><p>{RECURSOS[i].texto}</p></div>
+          </article>
+        ))}
+      </div>
+      <div className="recursos-grade" data-obra-grupo>
+        {RECURSOS.filter((_, i) => !DESTAQUES.some(([d]) => d === i)).map((r, i) => (
+          <article key={r.titulo} className="recurso luz">
             <span className="glifo" aria-hidden="true">{GLIFOS[(i % 5) + 1]}</span>
             <h3>{r.titulo}</h3>
             <p>{r.texto}</p>
@@ -214,6 +300,7 @@ function Personalizar() {
       <div className="pers-texto" data-surge>
         <p className="rotulo">Do seu jeito</p>
         <Titulo partes={["Até o ícone ", ["é seu"], "."]} />
+        <Paletas />
         <ul role="list">
           {PERSONALIZAR.map(([t, d]) => (
             <li key={t}><b>{t}</b><span>{d}</span></li>
@@ -234,10 +321,10 @@ function Passos() {
         <p className="rotulo">Como funciona</p>
         <Titulo partes={["Três passos e ", ["pronto"], "."]} />
       </div>
-      <ol className="passos-lista">
+      <ol className="passos-lista" data-obra-grupo>
         <span className="passos-linha" data-linha aria-hidden="true" />
-        {PASSOS.map((p, i) => (
-          <li key={p.n} className="luz" data-surge={i * 0.08}><span className="n">{p.n}</span><h3>{p.titulo}</h3><p>{p.texto}</p></li>
+        {PASSOS.map((p) => (
+          <li key={p.n} className="luz"><span className="n">{p.n}</span><h3>{p.titulo}</h3><p>{p.texto}</p></li>
         ))}
       </ol>
     </section>
@@ -306,6 +393,7 @@ export function App() {
         <Duvidas />
         <Final />
       </main>
+      <Obra />
       <Passeio />
     </>
   );

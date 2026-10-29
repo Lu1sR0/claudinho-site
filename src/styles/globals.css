@@ -39,6 +39,16 @@ em { font-family: var(--serifa); font-style: italic; font-weight: 400; letter-sp
 :focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 6px; }
 ::selection { background: color-mix(in srgb, var(--acento) 45%, transparent); }
 
+/* barra de rolagem: trilho da cor da pagina, alca quente e fina que acende
+   no laranja ao passar o mouse. Firefox so aceita as cores. */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { border: 3px solid var(--bg); border-radius: 999px; background: linear-gradient(180deg, #4a4642, #37342f); }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--acento-2), var(--acento)); }
+::-webkit-scrollbar-thumb:active { background: var(--acento-botao); }
+::-webkit-scrollbar-corner { background: var(--bg); }
+@supports (-moz-appearance: none) { html { scrollbar-width: thin; scrollbar-color: #4a4642 var(--bg); } }
+
 /* buttons */
 .botao { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px; background: var(--acento-botao); color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; border: 0; cursor: pointer;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 10px 30px color-mix(in srgb, var(--acento) 35%, transparent); transition: transform 0.2s var(--ease), background 0.2s, box-shadow 0.2s; }

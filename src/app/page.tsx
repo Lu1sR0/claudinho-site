@@ -1,5 +1,5 @@
 import { App } from "../App";
-import { DOWNLOADS, DUVIDAS, TELAS } from "../content";
+import { DOWNLOADS, DUVIDAS, REPO, TELAS } from "../content";
 import { AUTOR, DESCRICAO, SITE } from "../lib/site";
 
 // Dados estruturados (JSON-LD) para os buscadores: o site, o autor, o app
@@ -26,6 +26,18 @@ const DADOS = {
       ...(DOWNLOADS.windows.url ? { downloadUrl: DOWNLOADS.windows.url, fileSize: "124 MB" } : {}),
       image: `${SITE}/opengraph-image.jpg`,
       screenshot: TELAS.map((t) => ({ "@type": "ImageObject", url: `${SITE}/assets/telas/${t.id}-1440.webp`, caption: t.alt })),
+      author: { "@id": `${SITE}/#autor` },
+      sameAs: [REPO],
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": `${SITE}/#codigo`,
+      name: "Claudinho",
+      codeRepository: REPO,
+      programmingLanguage: "JavaScript",
+      runtimePlatform: "Electron",
+      license: "https://opensource.org/licenses/MIT",
+      targetProduct: { "@id": `${SITE}/#app` },
       author: { "@id": `${SITE}/#autor` },
     },
     {

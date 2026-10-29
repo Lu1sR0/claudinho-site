@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 
 import { FALAS_CLAWD, FALAS_SECAO } from "../content";
 import { reducedMotion } from "../lib/motion";
+import { evento } from "../lib/metricas";
 import { carregaMotor } from "../lib/vivo";
 
 // O Clawd que mora no rodape da tela: anda sozinho, olha o mouse, acena,
@@ -78,7 +79,7 @@ export function Passeio() {
         if (e.pointerType === "mouse") { mx = e.clientX; my = e.clientY; }
         if (!segura) return;
         if (!segura.moveu && Math.hypot(e.clientX - segura.x0, e.clientY - segura.y0) > 5 && !quieto) {
-          segura.moveu = true; modo = "arrastado"; ang = angV = 0; cv.style.transformOrigin = `${segura.dx}px ${segura.dy}px`; fala("ei! me põe no chão", true);
+          segura.moveu = true; modo = "arrastado"; evento("Clawd: arrastado"); ang = angV = 0; cv.style.transformOrigin = `${segura.dx}px ${segura.dy}px`; fala("ei! me põe no chão", true);
         }
         if (modo !== "arrastado") return;
         x = e.clientX - segura.dx;
@@ -92,6 +93,7 @@ export function Passeio() {
         if (!segura) return;
         const s = segura; segura = null;
         if (!s.moveu) {
+          evento("Clawd: clique", { onde: "passeio" });
           // clique: um pulo e uma frase
           if (!quieto && alt === 0) { modo = "cai"; vy = 620; vx = 0; jogado = false; }
           fala(CLIQUE[Math.floor(Math.random() * CLIQUE.length)], true);
@@ -193,7 +195,7 @@ export function Passeio() {
           if (alt <= 0) {
             alt = 0; ang = 0; cv.style.transformOrigin = "";
             if (vy < -700) { vy = -vy * 0.32; vx *= 0.6; }
-            else if (jogado && vy < -380) { modo = "tonto"; tontoAte = ms + 1300; vx = 0; fala("ufa…", true); }
+            else if (jogado && vy < -380) { evento("Clawd: tonto"); modo = "tonto"; tontoAte = ms + 1300; vx = 0; fala("ufa…", true); }
             else { modo = "para"; ate = ms + 1200; vx = 0; }
           }
         } else if (modo === "tonto") {

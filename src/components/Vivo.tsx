@@ -6,6 +6,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { evento } from "../lib/metricas";
 import { carregaMotor, type Motor, type Tema } from "../lib/vivo";
 
 type Props = { tema: string; className?: string; escala?: number; aoMudarClaro?: (claro: boolean) => void };
@@ -27,8 +28,9 @@ export function Vivo({ tema, className, escala = 1, aoMudarClaro }: Props) {
     const move = (e: PointerEvent) => { const p = local(e); cru = p.dentro ? p : null; if (p.dentro && estado.current.atual) estado.current.big?.mark(p.x, p.y); };
     const clica = (e: PointerEvent) => {
       const p = local(e), s = estado.current;
-      if (!p.dentro || !s.atual || (e.target as HTMLElement).closest("a, button, input")) return;
+      if (!p.dentro || !s.atual || (e.target as HTMLElement).closest("a, button, input, .passeio, .clawd")) return;
       s.atual.click?.(p.x, p.y, agora(), s.big);
+      evento("Fundo clicado", { tema: s.atual.id }, { intervalo: 2000 });
     };
     addEventListener("pointermove", move, { passive: true });
     addEventListener("pointerdown", clica);

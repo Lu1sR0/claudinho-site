@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { reducedMotion } from "../lib/motion";
+import { evento } from "../lib/metricas";
 import { carregaMotor } from "../lib/vivo";
 
 // O Clawd de capacete que constroi a pagina: no topo, monta o hero peca por
@@ -170,15 +171,18 @@ export function Obra() {
         const pecas: [string, number][] = [[".hero h1", 900], [".hero .sub", 1700], [".hero .acoes", 1100], [".hero .temas-rapidos", 1500], [".hero .janela", 2600]];
         enfileira(async () => {
           await espera(350);
+          let feito = 0;
           for (let i = 0; i < pecas.length; i++) {
+            if (!pulou) feito = i;
             const el = document.querySelector<HTMLElement>(pecas[i][0]);
             ob.bolha = `construindo ${Math.round((i / pecas.length) * 100)}%`;
             if (el) await constroi(el, pecas[i][1]);
           }
           document.querySelectorAll<HTMLElement>(TOPO).forEach((e) => mostra(e, 1));
+          evento(pulou ? "Intro: pulada" : "Intro: assistida", pulou ? { em: `${Math.round((feito / pecas.length) * 100)}%` } : undefined);
           if (!pulou) { ob.bolha = "pronto!"; await espera(650); }
           ob.bolha = "";
-          // o pulo para o chao: ele vira o Clawd que passeia; o capacete sai voando
+          // o pulo para o chao: ele vira o Clawd que passeia
           window.dispatchEvent(new CustomEvent("obra-pronta", { detail: { x: ob.visivel ? ob.x : null, y: ob.y } }));
           ob.visivel = false; ob.alfa = 0;
           termina();

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { DOWNLOADS } from "../content";
+import { evento } from "../lib/metricas";
 
 // Qual sistema esta abrindo a pagina. Descoberto so no navegador, depois de
 // montar, para o HTML do servidor e o do cliente baterem.
@@ -40,8 +41,8 @@ export function BotaoBaixar({ p, fantasma, pequeno }: { p: Plataforma; fantasma?
     </>
   );
   return d.url
-    ? <a className={cls} href={d.url} data-clawd-alvo="esse botão aí!">{corpo}</a>
-    : <span className={`${cls} desligado`} aria-disabled="true" data-clawd-alvo="falta pouco pra esse sair">{corpo}</span>;
+    ? <a className={cls} href={d.url} data-clawd-alvo="esse botão aí!" onClick={() => evento("Download", { sistema: p })}>{corpo}</a>
+    : <span className={`${cls} desligado`} aria-disabled="true" data-clawd-alvo="falta pouco pra esse sair" onClick={() => evento("Download em breve", { sistema: p })}>{corpo}</span>;
 }
 
 /** O bloco de download: o sistema de quem abriu primeiro, o outro do lado. */

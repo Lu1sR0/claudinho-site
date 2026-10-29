@@ -7,14 +7,15 @@
 
 import { useEffect, useRef } from "react";
 
+import { evento } from "../lib/metricas";
 import { carregaMotor } from "../lib/vivo";
 
 export type Pose = "olha" | "digita" | "treina" | "dorme";
-type Props = { pose?: Pose; px?: number; className?: string; fala?: string[] };
+type Props = { pose?: Pose; px?: number; className?: string; fala?: string[]; onde?: string };
 
 const LARANJA = "#d97757";
 
-export function Clawd({ pose = "olha", px = 6, className, fala }: Props) {
+export function Clawd({ pose = "olha", px = 6, className, fala, onde = "topo" }: Props) {
   const ref = useRef<HTMLCanvasElement>(null), balao = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function Clawd({ pose = "olha", px = 6, className, fala }: Props) {
     const move = (e: PointerEvent) => { mx = e.clientX; my = e.clientY; };
     const entra = () => { dentro = true; mostra(fala?.[0] ?? "oi"); };
     const sai = () => (dentro = false);
-    const clica = () => { pulo = performance.now(); if (fala?.length) mostra(fala[Math.floor(Math.random() * fala.length)]); };
+    const clica = () => { pulo = performance.now(); evento("Clawd: clique", { onde, pose }); if (fala?.length) mostra(fala[Math.floor(Math.random() * fala.length)]); };
     const mostra = (t: string) => {
       const b = balao.current; if (!b) return;
       b.textContent = t; b.classList.add("on"); clearTimeout(timer);

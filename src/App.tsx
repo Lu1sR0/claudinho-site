@@ -10,6 +10,7 @@ import { Passeio } from "./components/Passeio";
 import { Titulo } from "./components/Titulo";
 import { Vivo } from "./components/Vivo";
 import { DUVIDAS, FALAS_CLAWD, PASSOS, PERSONALIZAR, RECURSOS, TELAS, TEMAS_VITRINE } from "./content";
+import { evento } from "./lib/metricas";
 import { animaFaixa, gsap, reducedMotion, ScrollTrigger, scrollToTarget, setupInteracoes, setupReveals, startSmoothScroll } from "./lib/motion";
 
 const GLIFOS = ["·", "✢", "✳", "✶", "✻", "✽"];
@@ -30,11 +31,12 @@ function PedeTema({ aoEscolher }: { aoEscolher: (id: string) => void }) {
   const [texto, setTexto] = useState(""), [resposta, setResposta] = useState(""), [ocupado, setOcupado] = useState(false);
   const timer = useRef(0);
   useEffect(() => () => clearInterval(timer.current), []);
-  const pede = (t: string) => {
+  const pede = (t: string, origem = "digitado") => {
     t = t.trim();
     if (!t || ocupado) return;
     const achou = PALAVRAS.find(([re]) => re.test(t));
     const outros = TEMAS_VITRINE.slice(1), tema = achou ? TEMAS_VITRINE.find((x) => x.id === achou[1])! : outros[Math.floor(Math.random() * outros.length)];
+    evento("Pedido de tema", { tema: achou ? tema.id : "não entendeu", origem });
     const frase = achou ? `Trocando para ${tema.nome}.` : `Não tenho um tema assim, mas ${tema.nome} combina. Trocando.`;
     setTexto(""); setOcupado(true); setResposta("");
     let i = 0;
@@ -51,7 +53,7 @@ function PedeTema({ aoEscolher }: { aoEscolher: (id: string) => void }) {
         <button type="submit" aria-label="Enviar" disabled={ocupado}>↑</button>
       </div>
       <div className="pede-sugestoes">
-        {["algo espacial", "um lago com peixes", "frio, quero fogo"].map((x) => <button type="button" key={x} onClick={() => pede(x)} data-clawd-alvo="pede, pede!">{x}</button>)}
+        {["algo espacial", "um lago com peixes", "frio, quero fogo"].map((x) => <button type="button" key={x} onClick={() => pede(x, "sugestão")} data-clawd-alvo="pede, pede!">{x}</button>)}
       </div>
     </form>
   );
@@ -74,7 +76,7 @@ function Paletas() {
       <span>Teste aqui: as cores desta página mudam.</span>
       <div role="group" aria-label="Cor de destaque">
         {PALETAS_SITE.map((p) => (
-          <button key={p[0]} className={on === p[0] ? "on" : ""} onClick={() => aplica(p)} aria-pressed={on === p[0]} title={p[0]} data-clawd-alvo={`${p[0].toLowerCase()} fica bonito`}>
+          <button key={p[0]} className={on === p[0] ? "on" : ""} onClick={() => { aplica(p); evento("Paleta", { cor: p[0] }); }} aria-pressed={on === p[0]} title={p[0]} data-clawd-alvo={`${p[0].toLowerCase()} fica bonito`}>
             <i style={{ background: p[1] }} /><span>{p[0]}</span>
           </button>
         ))}
@@ -115,10 +117,10 @@ function Nav() {
       </a>
       <nav aria-label="Seções">
         {[["#temas", "Temas"], ["#clawd", "Clawd"], ["#recursos", "Recursos"], ["#por-dentro", "Por dentro"], ["#duvidas", "Dúvidas"]].map(([h, n]) => (
-          <a key={h} href={h} onClick={(e) => { e.preventDefault(); scrollToTarget(h); }}>{n}</a>
+          <a key={h} href={h} onClick={(e) => { e.preventDefault(); scrollToTarget(h); evento("Menu", { destino: n }); }}>{n}</a>
         ))}
       </nav>
-      <a className="botao pequeno" href="#baixar" onClick={(e) => { e.preventDefault(); scrollToTarget("#baixar"); }}>Baixar</a>
+      <a className="botao pequeno" href="#baixar" onClick={(e) => { e.preventDefault(); scrollToTarget("#baixar"); evento("Baixar (botão)", { local: "menu" }); }}>Baixar</a>
     </header>
   );
 }
@@ -151,15 +153,15 @@ function Hero() {
         <Titulo nivel={1} partes={["O seu Claude Code, ", ["agora com mais vida."]]} />
         <p className="sub">Um app de desktop que conversa com o Claude Code de verdade, com papéis de parede em ASCII que se mexem, o Clawd do seu lado e tudo o que você já usa: arquivos, comandos, MCPs e permissões.</p>
         <div className="acoes">
-          <a className="botao magnetico" href="#baixar" data-clawd-alvo="clica, clica!" onClick={(e) => { e.preventDefault(); scrollToTarget("#baixar"); }}>
+          <a className="botao magnetico" href="#baixar" data-clawd-alvo="clica, clica!" onClick={(e) => { e.preventDefault(); scrollToTarget("#baixar"); evento("Baixar (botão)", { local: "topo" }); }}>
             {sistema === "mac" ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.5 1.3 0 1.7-.8 3.3-.8 1.5 0 1.9.8 3.3.8 1.4 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.6-1-2.6-4.2zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z" /></svg> : sistema === "windows" ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z" /></svg> : null}
             {sistema === "mac" ? "Baixar para Mac" : sistema === "windows" ? "Baixar para Windows" : "Baixar o Claudinho"}
           </a>
-          <a className="botao fantasma magnetico" href="#por-dentro" onClick={(e) => { e.preventDefault(); scrollToTarget("#por-dentro"); }}>Ver por dentro</a>
+          <a className="botao fantasma magnetico" href="#por-dentro" onClick={(e) => { e.preventDefault(); scrollToTarget("#por-dentro"); evento("Ver por dentro"); }}>Ver por dentro</a>
         </div>
         <div className="temas-rapidos" role="group" aria-label="Trocar o papel de parede do topo">
           {TEMAS_VITRINE.slice(0, 5).map((t) => (
-            <button key={t.id} className={tema === t.id ? "on" : ""} onClick={() => setTema(t.id)} data-clawd-alvo={t.id === "claude" ? "esse é o da casa" : "esse é bonito"}>{t.nome}</button>
+            <button key={t.id} className={tema === t.id ? "on" : ""} onClick={() => { setTema(t.id); evento("Tema trocado", { tema: t.id, onde: "topo" }); }} data-clawd-alvo={t.id === "claude" ? "esse é o da casa" : "esse é bonito"}>{t.nome}</button>
           ))}
           <span className="dica">{sistema === "celular" ? "toque no fundo ✻ arraste o Clawd" : "passe o mouse no fundo ✻ clique nele"}</span>
         </div>
@@ -203,7 +205,7 @@ function Temas() {
         </div>
         <ul className="vitrine-lista" role="list">
           {TEMAS_VITRINE.map((t) => (
-            <li key={t.id}><button className={t.id === tema ? "on" : ""} onClick={() => setTema(t.id)} onMouseEnter={() => setTema(t.id)} data-clawd-alvo={`${t.nome}! ${t.nota}`}>{t.nome}</button></li>
+            <li key={t.id}><button className={t.id === tema ? "on" : ""} onClick={() => { setTema(t.id); evento("Tema trocado", { tema: t.id, onde: "vitrine" }); }} onMouseEnter={() => setTema(t.id)} data-clawd-alvo={`${t.nome}! ${t.nota}`}>{t.nome}</button></li>
           ))}
           <li className="mais">+ 7 temas, 278 animações da biblioteca ASCII Magic e os seus vídeos, imagens e GIFs</li>
         </ul>
@@ -229,7 +231,7 @@ function ClawdSecao() {
       <div className="clawd-grade" data-obra-grupo>
         {cards.map((c, i) => (
           <article key={c.pose} className="clawd-card luz inclina" data-clawd-alvo={["sou eu!", "trabalhando…", "puxado, hein", "zzz… brincadeira"][i]}>
-            <div className="clawd-palco"><Clawd pose={c.pose} px={5} fala={FALAS_CLAWD} /></div>
+            <div className="clawd-palco"><Clawd pose={c.pose} px={5} fala={FALAS_CLAWD} onde="cartão" /></div>
             <h3>{c.titulo}</h3>
             <p>{c.texto}</p>
           </article>
@@ -280,7 +282,7 @@ function PorDentro() {
       </div>
       <div className="abas" role="tablist" data-surge>
         {TELAS.map((t, i) => (
-          <button key={t.id} role="tab" aria-selected={aba === i} className={aba === i ? "on" : ""} onClick={() => setAba(i)}>{t.rotulo}</button>
+          <button key={t.id} role="tab" aria-selected={aba === i} className={aba === i ? "on" : ""} onClick={() => { setAba(i); evento("Tela do app", { aba: t.rotulo }); }}>{t.rotulo}</button>
         ))}
       </div>
       <div className="moldura" data-abre>
@@ -340,7 +342,7 @@ function Duvidas() {
       </div>
       <div className="duvidas-lista">
         {DUVIDAS.map((d) => (
-          <details key={d.p} data-surge>
+          <details key={d.p} data-surge onToggle={(e) => { if ((e.currentTarget as HTMLDetailsElement).open) evento("Dúvida aberta", { pergunta: d.p.slice(0, 80) }); }}>
             <summary>{d.p}<span aria-hidden="true">+</span></summary>
             <p>{d.r}</p>
           </details>
@@ -355,13 +357,13 @@ function Final() {
     <section id="baixar" className="final">
       <Vivo tema="lareira" className="final-fundo" />
       <div className="final-conteudo" data-surge>
-        <Clawd pose="olha" px={7} fala={FALAS_CLAWD} />
+        <Clawd pose="olha" px={7} fala={FALAS_CLAWD} onde="final" />
         <Titulo partes={["Bora dar ", ["vida"], " ao seu Claude Code?"]} />
         <p>Gratuito e de código aberto. Baixe, instale e abra: ele usa o Claude Code que já está no seu computador.</p>
         <Baixar />
       </div>
       <footer className="rodape">
-        <p className="autor">Feito por <a href="https://luisrobertoportifolio.com" target="_blank" rel="noreferrer">Luis Roberto</a></p>
+        <p className="autor">Feito por <a href="https://luisrobertoportifolio.com" target="_blank" rel="noreferrer" onClick={() => evento("Portfólio")}>Luis Roberto</a></p>
         <p>Claudinho é um projeto independente de fã. Não é afiliado nem endossado pela Anthropic. Claude, Claude Code e Clawd são marcas da Anthropic.</p>
         <p>Animações da biblioteca <a href="https://www.ascii-magic.com/ascii" target="_blank" rel="noreferrer">ASCII Magic</a> (MIT). Ideia dos papéis de parede vivos inspirada no conceito de Marko Vineli.</p>
       </footer>
@@ -377,7 +379,10 @@ export function App() {
     let vivo = true;
     document.fonts.ready.then(() => { if (!vivo) return; desfaz = setupReveals(); ScrollTrigger.refresh(); });
     const t = setTimeout(() => ScrollTrigger.refresh(), 800), interacoes = setupInteracoes();
-    return () => { vivo = false; clearTimeout(t); desfaz(); interacoes(); };
+    // how far people get: each section counts once per visit
+    const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) evento("Seção vista", { secao: en.target.id }, { umaVez: "secao:" + en.target.id }); }), { rootMargin: "-45% 0px -45% 0px" });
+    document.querySelectorAll("main section[id]").forEach((s) => io.observe(s));
+    return () => { vivo = false; clearTimeout(t); desfaz(); interacoes(); io.disconnect(); };
   }, []);
   return (
     <>

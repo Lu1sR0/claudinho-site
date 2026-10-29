@@ -276,7 +276,7 @@ function PorDentro() {
     <section id="por-dentro" className="secao por-dentro">
       <div className="cabeca" data-surge>
         <p className="rotulo">Por dentro</p>
-        <Titulo partes={["Telas de verdade, ", ["sem maquiagem"], "."]} />
+        <Titulo partes={["O Claudinho ", ["em ação"], "."]} />
       </div>
       <div className="abas" role="tablist" data-surge>
         {TELAS.map((t, i) => (

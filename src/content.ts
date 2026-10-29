@@ -81,7 +81,7 @@ export const FALAS_SECAO: Record<string, string[]> = {
   temas: ["esses fundos rodam no app de verdade", "o Koi foge do mouse, testa", "clica no fundo pra ver"],
   clawd: ["ei, esses aí sou eu", "a academia é puxada", "dormir no limite é o melhor"],
   recursos: ["o Claude trabalha, eu fico de olho", "desfazer salva vidas"],
-  "por-dentro": ["telas de verdade, prometo", "olha eu ali no canto"],
+  "por-dentro": ["essas telas são do app de verdade", "olha eu ali no canto"],
   duvidas: ["pergunta que eu respondo", "é de graça, sério"],
   baixar: ["quentinho aqui perto do fogo", "bora?"],
 };
